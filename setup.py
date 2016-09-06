@@ -13,5 +13,5 @@ setup(
     include_package_data=True,
     platforms='any',
     license='MIT',
-    install_requires=[],
+    install_requires=['matplotlib',],
 )
