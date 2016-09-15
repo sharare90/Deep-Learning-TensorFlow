@@ -93,56 +93,62 @@ if __name__ == '__main__':
         finetune_opt=FLAGS.finetune_opt, finetune_loss_func=FLAGS.finetune_loss_func,
         finetune_dropout=FLAGS.finetune_dropout)
 
-    number_of_pictures = 1
     number_of_slices_for_each_image = (settings.HEIGHT - (settings.WINDOW_HEIGHT - 1)) * (settings.WIDTH - (
         settings.WINDOW_WIDTH - 1))
 
+    counter_0 = 0
+    counter_192 = 0
+    trX = []
+    trY = []
+    trX0 = []
+    trY0 = []
+    trX192 = []
+    trY192 = []
+    number_of_pictures = 5000
+    for i in xrange(100):
+        print 'Finetune: %d pictures loaded.' % (i + 1)
+        image, label = get_file(i, column_format=False)
+        imgs, lbls = windowing(image, label, column_format=True, preprocess=True)
+        import pdb
+
+        pdb.set_trace()
+        for j in xrange(len(imgs)):
+            if lbls[j] == 0:
+                if counter_0 < 5000:
+                    trX0.append(imgs[j])
+                    trY0.append(lbls[j])
+                    counter_0 += 1
+
+            elif lbls[j] == 192:
+                if counter_192 < 5000:
+                    trX192.append(imgs[j])
+                    trY192.append(lbls[j])
+                    counter_192 += 1
+
+    trX0 = np.multiply(trX0, 1)
+    trX0 = trX0.reshape(number_of_pictures,
+                        settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
+    trY0 = np.multiply(trY0, 1)
+    trY0 = trY0.reshape(number_of_pictures, 1)
+    trY0 = np.eye(settings.NUMBER_OF_CLASSES)[[trY0]].reshape(trY0.shape[0], settings.NUMBER_OF_CLASSES)
+
+    trX192 = np.multiply(trX192, 1)
+    trX192 = trX192.reshape(number_of_pictures,
+                            settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
+    trY192 = np.multiply(trY192, 1)
+    trY192 = trY192.reshape(number_of_pictures, 1)
+    trY192 = np.eye(settings.NUMBER_OF_CLASSES)[[trY192]].reshape(trY192.shape[0], settings.NUMBER_OF_CLASSES)
+
     # Fit the model (unsupervised pretraining)
     if FLAGS.do_pretrain:
-        counter = 0
-        for i in xrange(1):
-            trX = []
-            for j in xrange(number_of_pictures):
-                if j % 10 == 0:
-                    print 'Pretrain: %d pictures loaded.' % (j + 1)
-                image, label = get_file(counter, column_format=False)
-                counter += 1
-                imgs, _ = windowing(image, label, column_format=True, preprocess=True)
-                trX.append(imgs)
+        srbm.pretrain(trX0)
+        srbm.pretrain(trX192)
 
-            trX = np.multiply(trX, 1)
-
-            trX = trX.reshape(number_of_pictures * number_of_slices_for_each_image,
-                              settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
-
-            srbm.pretrain(trX)
 
     # finetuning
     print('Start deep belief net finetuning...')
-
-    counter = 0
-
-    for i in xrange(1):
-        trX = []
-        trY = []
-        for j in xrange(number_of_pictures):
-            print 'Finetune: %d pictures loaded.' % (j + 1)
-            image, label = get_file(counter, column_format=False)
-            counter += 1
-            imgs, lbls = windowing(image, label, column_format=True, preprocess=True)
-            import pdb
-            pdb.set_trace()
-            trX.append(imgs)
-            trY.append(lbls)
-
-        trX = np.multiply(trX, 1)
-        trX = trX.reshape(number_of_pictures * number_of_slices_for_each_image,
-                          settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
-        trY = np.multiply(trY, 1)
-        trY = trY.reshape(number_of_pictures * number_of_slices_for_each_image, 1)
-        trY = np.eye(settings.NUMBER_OF_CLASSES)[[trY]].reshape(trY.shape[0], settings.NUMBER_OF_CLASSES)
-
-        srbm.fit(trX, trY, restore_previous_model=FLAGS.restore_previous_model)
+    srbm.fit(trX0, trY0, restore_previous_model=FLAGS.restore_previous_model)
+    srbm.fit(trX192, trY192, restore_previous_model=FLAGS.restore_previous_model)
 
     # Test the model
 
