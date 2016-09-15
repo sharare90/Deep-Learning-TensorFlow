@@ -1,17 +1,17 @@
 import os
-
 from random import shuffle
 
 import numpy as np
 import tensorflow as tf
 
 from command_line import config
+
+from yadlt.models.rbm_models import dbn
+from yadlt.utils import utilities
+
 from ibsrfiles import settings
 from ibsrfiles.read_data import get_file
 from ibsrfiles.utils import windowing
-
-from yadlt.models.rbm_models import dbn
-from yadlt.utils import datasets, utilities
 
 # #################### #
 #   Flags definition   #
