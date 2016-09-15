@@ -109,9 +109,6 @@ if __name__ == '__main__':
         print 'Finetune: %d pictures loaded.' % (i + 1)
         image, label = get_file(i, column_format=False)
         imgs, lbls = windowing(image, label, column_format=True, preprocess=True)
-        import pdb
-
-        pdb.set_trace()
         for j in xrange(len(imgs)):
             if lbls[j] == 0:
                 if counter_0 < 5000:
@@ -119,7 +116,7 @@ if __name__ == '__main__':
                     trY0.append(lbls[j])
                     counter_0 += 1
 
-            elif lbls[j] == 192:
+            elif lbls[j] == 2:
                 if counter_192 < 5000:
                     trX192.append(imgs[j])
                     trY192.append(lbls[j])
@@ -139,46 +136,45 @@ if __name__ == '__main__':
     trY192 = trY192.reshape(number_of_pictures, 1)
     trY192 = np.eye(settings.NUMBER_OF_CLASSES)[[trY192]].reshape(trY192.shape[0], settings.NUMBER_OF_CLASSES)
 
-    # Fit the model (unsupervised pretraining)
+    # Fit the model (unsupervised pre-training)
     if FLAGS.do_pretrain:
-        srbm.pretrain(trX0)
-        srbm.pretrain(trX192)
+        srbm.pretrain(trX0 + trX192)
+        # srbm.pretrain(trX192)
 
-
-    # finetuning
+    # fine-tuning
     print('Start deep belief net finetuning...')
-    srbm.fit(trX0, trY0, restore_previous_model=FLAGS.restore_previous_model)
-    srbm.fit(trX192, trY192, restore_previous_model=FLAGS.restore_previous_model)
+    srbm.fit(trX0 + trX192, trY0 + trY192, restore_previous_model=FLAGS.restore_previous_model)
+    # srbm.fit(trX192, trY192, restore_previous_model=FLAGS.restore_previous_model)
 
     # Test the model
 
-    trX_0 = []
-    trY_0 = []
-    trX_1 = []
-    trY_1 = []
-    trX_2 = []
-    trY_2 = []
-    trX_3 = []
-    trY_3 = []
-    for i in xrange(len(trY)):
-        # import pdb
-        # pdb.set_trace()
-        if trY[i, 0] == 1:
-            trX_0.append(trX[i, :])
-            trY_0.append(trY[i, :])
-        elif trY[i, 1] == 1:
-            trX_1.append(trX[i, :])
-            trY_1.append(trY[i, :])
-        elif trY[i, 2] == 1:
-            trX_2.append(trX[i, :])
-            trY_2.append(trY[i, :])
-        else:
-            trX_3.append(trX[i, :])
-            trY_3.append(trY[i, :])
+    # trX_0 = []
+    # trY_0 = []
+    # trX_1 = []
+    # trY_1 = []
+    # trX_2 = []
+    # trY_2 = []
+    # trX_3 = []
+    # trY_3 = []
+    # for i in xrange(len(trY)):
+    #     # import pdb
+    #     # pdb.set_trace()
+    #     if trY[i, 0] == 1:
+    #         trX_0.append(trX[i, :])
+    #         trY_0.append(trY[i, :])
+    #     elif trY[i, 1] == 1:
+    #         trX_1.append(trX[i, :])
+    #         trY_1.append(trY[i, :])
+    #     elif trY[i, 2] == 1:
+    #         trX_2.append(trX[i, :])
+    #         trY_2.append(trY[i, :])
+    #     else:
+    #         trX_3.append(trX[i, :])
+    #         trY_3.append(trY[i, :])
 
-    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_0, trY_0)))
+    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX0, trY0)))
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_1, trY_1)))
-    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_2, trY_2)))
+    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX192, trY192)))
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_3, trY_3)))
 
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
