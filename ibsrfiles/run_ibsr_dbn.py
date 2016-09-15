@@ -51,7 +51,7 @@ flags.DEFINE_string('rbm_gibbs_k', '1,', 'Gibbs sampling steps.')
 flags.DEFINE_string('finetune_act_func', 'sigmoid', 'Activation function.')
 flags.DEFINE_float('finetune_learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('finetune_momentum', 0.7, 'Momentum parameter.')
-flags.DEFINE_integer('finetune_num_epochs', 10, 'Number of epochs.')
+flags.DEFINE_integer('finetune_num_epochs', 100, 'Number of epochs.')
 flags.DEFINE_integer('finetune_batch_size', 10, 'Size of each mini-batch.')
 flags.DEFINE_string('finetune_opt', 'gradient_descent', '["gradient_descent", "ada_grad", "momentum", "adam"]')
 flags.DEFINE_string('finetune_loss_func', 'softmax_cross_entropy',
@@ -97,30 +97,43 @@ if __name__ == '__main__':
         settings.WINDOW_WIDTH - 1))
 
     counter_0 = 0
+    counter_128 = 0
     counter_192 = 0
-    trX = []
-    trY = []
+    counter_254 = 0
     trX0 = []
     trY0 = []
+    trX128 = []
+    trY128 = []
     trX192 = []
     trY192 = []
-    number_of_pictures = 5000
+    trX254 = []
+    trY254 = []
+    number_of_pictures = 7000
     for i in xrange(100):
         print 'Finetune: %d pictures loaded.' % (i + 1)
         image, label = get_file(i, column_format=False)
         imgs, lbls = windowing(image, label, column_format=True, preprocess=True)
         for j in xrange(len(imgs)):
             if lbls[j] == 0:
-                if counter_0 < 5000:
+                if counter_0 < 7000:
                     trX0.append(imgs[j])
                     trY0.append(lbls[j])
                     counter_0 += 1
-
+            elif lbls[j] == 1:
+                if counter_128 < 7000:
+                    trX128.append(imgs[j])
+                    trY128.append(lbls[j])
+                    counter_128 += 1
             elif lbls[j] == 2:
-                if counter_192 < 5000:
+                if counter_192 < 7000:
                     trX192.append(imgs[j])
                     trY192.append(lbls[j])
                     counter_192 += 1
+            elif lbls[j] == 3:
+                if counter_254 < 7000:
+                    trX254.append(imgs[j])
+                    trY254.append(lbls[j])
+                    counter_254 += 1
 
     trX0 = np.multiply(trX0, 1)
     trX0 = trX0.reshape(number_of_pictures,
@@ -129,6 +142,13 @@ if __name__ == '__main__':
     trY0 = trY0.reshape(number_of_pictures, 1)
     trY0 = np.eye(settings.NUMBER_OF_CLASSES)[[trY0]].reshape(trY0.shape[0], settings.NUMBER_OF_CLASSES)
 
+    trX128 = np.multiply(trX128, 1)
+    trX128 = trX128.reshape(number_of_pictures,
+                            settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
+    trY128 = np.multiply(trY128, 1)
+    trY128 = trY128.reshape(number_of_pictures, 1)
+    trY128 = np.eye(settings.NUMBER_OF_CLASSES)[[trY128]].reshape(trY128.shape[0], settings.NUMBER_OF_CLASSES)
+
     trX192 = np.multiply(trX192, 1)
     trX192 = trX192.reshape(number_of_pictures,
                             settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
@@ -136,14 +156,21 @@ if __name__ == '__main__':
     trY192 = trY192.reshape(number_of_pictures, 1)
     trY192 = np.eye(settings.NUMBER_OF_CLASSES)[[trY192]].reshape(trY192.shape[0], settings.NUMBER_OF_CLASSES)
 
+    trX254 = np.multiply(trX254, 1)
+    trX254 = trX254.reshape(number_of_pictures,
+                            settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
+    trY254 = np.multiply(trY254, 1)
+    trY254 = trY254.reshape(number_of_pictures, 1)
+    trY254 = np.eye(settings.NUMBER_OF_CLASSES)[[trY254]].reshape(trY254.shape[0], settings.NUMBER_OF_CLASSES)
+
     # Fit the model (unsupervised pre-training)
     if FLAGS.do_pretrain:
-        srbm.pretrain(trX0 + trX192)
+        srbm.pretrain(trX0 + trX128 + trX192 + trX254)
         # srbm.pretrain(trX192)
 
     # fine-tuning
     print('Start deep belief net finetuning...')
-    srbm.fit(trX0 + trX192, trY0 + trY192, restore_previous_model=FLAGS.restore_previous_model)
+    srbm.fit(trX0 + trX128 + trX192 + trX254, trY0 + trY128 + trY192 + trY254, restore_previous_model=FLAGS.restore_previous_model)
     # srbm.fit(trX192, trY192, restore_previous_model=FLAGS.restore_previous_model)
 
     # Test the model
@@ -172,10 +199,10 @@ if __name__ == '__main__':
     #         trX_3.append(trX[i, :])
     #         trY_3.append(trY[i, :])
 
-    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX0, trY0)))
-    # print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_1, trY_1)))
-    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX192, trY192)))
-    # print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_3, trY_3)))
+    print('Test set accuracy for 0: {}'.format(srbm.compute_accuracy(trX0, trY0)))
+    print('Test set accuracy for 128: {}'.format(srbm.compute_accuracy(trX128, trY128)))
+    print('Test set accuracy for 192: {}'.format(srbm.compute_accuracy(trX192, trY192)))
+    print('Test set accuracy for 254: {}'.format(srbm.compute_accuracy(trX254, trY254)))
 
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
 
