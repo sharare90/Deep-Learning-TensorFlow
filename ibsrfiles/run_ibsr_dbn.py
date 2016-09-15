@@ -1,6 +1,7 @@
+import os
+
 import numpy as np
 import tensorflow as tf
-import os
 
 from command_line import config
 from ibsrfiles import settings
@@ -51,7 +52,7 @@ flags.DEFINE_string('rbm_gibbs_k', '1,', 'Gibbs sampling steps.')
 flags.DEFINE_string('finetune_act_func', 'sigmoid', 'Activation function.')
 flags.DEFINE_float('finetune_learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('finetune_momentum', 0.7, 'Momentum parameter.')
-flags.DEFINE_integer('finetune_num_epochs', 100, 'Number of epochs.')
+flags.DEFINE_integer('finetune_num_epochs', 10, 'Number of epochs.')
 flags.DEFINE_integer('finetune_batch_size', 10, 'Size of each mini-batch.')
 flags.DEFINE_string('finetune_opt', 'gradient_descent', '["gradient_descent", "ada_grad", "momentum", "adam"]')
 flags.DEFINE_string('finetune_loss_func', 'softmax_cross_entropy',
@@ -115,22 +116,22 @@ if __name__ == '__main__':
         imgs, lbls = windowing(image, label, column_format=True, preprocess=True)
         for j in xrange(len(imgs)):
             if lbls[j] == 0:
-                if counter_0 < 7000:
+                if counter_0 < number_of_pictures:
                     trX0.append(imgs[j])
                     trY0.append(lbls[j])
                     counter_0 += 1
             elif lbls[j] == 1:
-                if counter_128 < 7000:
+                if counter_128 < number_of_pictures:
                     trX128.append(imgs[j])
                     trY128.append(lbls[j])
                     counter_128 += 1
             elif lbls[j] == 2:
-                if counter_192 < 7000:
+                if counter_192 < number_of_pictures:
                     trX192.append(imgs[j])
                     trY192.append(lbls[j])
                     counter_192 += 1
             elif lbls[j] == 3:
-                if counter_254 < 7000:
+                if counter_254 < number_of_pictures:
                     trX254.append(imgs[j])
                     trY254.append(lbls[j])
                     counter_254 += 1
@@ -163,14 +164,17 @@ if __name__ == '__main__':
     trY254 = trY254.reshape(number_of_pictures, 1)
     trY254 = np.eye(settings.NUMBER_OF_CLASSES)[[trY254]].reshape(trY254.shape[0], settings.NUMBER_OF_CLASSES)
 
+    TRX = np.concatenate([trX0, trX128, trX192, trX254])
+    TRY = np.concatenate([trY0, trY128, trY192, trY254])
+
     # Fit the model (unsupervised pre-training)
     if FLAGS.do_pretrain:
-        srbm.pretrain(trX0 + trX128 + trX192 + trX254)
+        srbm.pretrain(TRX)
         # srbm.pretrain(trX192)
 
     # fine-tuning
     print('Start deep belief net finetuning...')
-    srbm.fit(trX0 + trX128 + trX192 + trX254, trY0 + trY128 + trY192 + trY254, restore_previous_model=FLAGS.restore_previous_model)
+    srbm.fit(TRX, TRY, restore_previous_model=FLAGS.restore_previous_model)
     # srbm.fit(trX192, trY192, restore_previous_model=FLAGS.restore_previous_model)
 
     # Test the model
