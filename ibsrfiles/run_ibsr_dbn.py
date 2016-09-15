@@ -27,8 +27,10 @@ flags.DEFINE_string('test_labels', '', 'Path to test labels .npy file.')
 flags.DEFINE_string('cifar_dir', '', 'Path to the cifar 10 dataset directory.')
 flags.DEFINE_string('model_name', 'dbn', 'Name of the model.')
 flags.DEFINE_string('save_predictions', '', 'Path to a .npy file to save predictions of the model.')
-flags.DEFINE_string('save_layers_output_test', '', 'Path to a .npy file to save test set output from all the layers of the model.')
-flags.DEFINE_string('save_layers_output_train', '', 'Path to a .npy file to save train set output from all the layers of the model.')
+flags.DEFINE_string('save_layers_output_test', '',
+                    'Path to a .npy file to save test set output from all the layers of the model.')
+flags.DEFINE_string('save_layers_output_train', '',
+                    'Path to a .npy file to save train set output from all the layers of the model.')
 flags.DEFINE_boolean('do_pretrain', True, 'Whether or not pretrain the network.')
 flags.DEFINE_boolean('restore_previous_model', False, 'If true, restore previous model corresponding to model name.')
 flags.DEFINE_integer('seed', -1, 'Seed for the random generators (>= 0). Useful for testing hyperparameters.')
@@ -40,19 +42,20 @@ flags.DEFINE_float('momentum', 0.5, 'Momentum parameter.')
 flags.DEFINE_string('rbm_layers', '50,', 'Comma-separated values for the layers in the sdae.')
 flags.DEFINE_boolean('rbm_gauss_visible', False, 'Whether to use Gaussian units for the visible layer.')
 flags.DEFINE_float('rbm_stddev', 0.1, 'Standard deviation for Gaussian visible units.')
-flags.DEFINE_string('rbm_learning_rate', '0.01,', 'Initial learning rate.')
+flags.DEFINE_string('rbm_learning_rate', '0.001,', 'Initial learning rate.')
 flags.DEFINE_string('rbm_num_epochs', '10,', 'Number of epochs.')
 flags.DEFINE_string('rbm_batch_size', '10,', 'Size of each mini-batch.')
 flags.DEFINE_string('rbm_gibbs_k', '1,', 'Gibbs sampling steps.')
 
 # Supervised fine tuning parameters
 flags.DEFINE_string('finetune_act_func', 'sigmoid', 'Activation function.')
-flags.DEFINE_float('finetune_learning_rate', 0.01, 'Learning rate.')
+flags.DEFINE_float('finetune_learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('finetune_momentum', 0.7, 'Momentum parameter.')
 flags.DEFINE_integer('finetune_num_epochs', 10, 'Number of epochs.')
 flags.DEFINE_integer('finetune_batch_size', 10, 'Size of each mini-batch.')
 flags.DEFINE_string('finetune_opt', 'gradient_descent', '["gradient_descent", "ada_grad", "momentum", "adam"]')
-flags.DEFINE_string('finetune_loss_func', 'softmax_cross_entropy', 'Loss function. ["mean_squared", "softmax_cross_entropy"]')
+flags.DEFINE_string('finetune_loss_func', 'softmax_cross_entropy',
+                    'Loss function. ["mean_squared", "softmax_cross_entropy"]')
 flags.DEFINE_float('finetune_dropout', 1, 'Dropout parameter.')
 
 # Conversion of Autoencoder layers parameters from string to their specific type
@@ -90,9 +93,9 @@ if __name__ == '__main__':
         finetune_opt=FLAGS.finetune_opt, finetune_loss_func=FLAGS.finetune_loss_func,
         finetune_dropout=FLAGS.finetune_dropout)
 
-    number_of_pictures = 1000
-    number_of_slices_for_each_image = (settings.HEIGHT - (settings.WINDOW_HEIGHT - 1)) * settings.WIDTH - (
-        settings.WINDOW_WIDTH - 1)
+    number_of_pictures = 1
+    number_of_slices_for_each_image = (settings.HEIGHT - (settings.WINDOW_HEIGHT - 1)) * (settings.WIDTH - (
+        settings.WINDOW_WIDTH - 1))
 
     # Fit the model (unsupervised pretraining)
     if FLAGS.do_pretrain:
@@ -108,8 +111,10 @@ if __name__ == '__main__':
                 trX.append(imgs)
 
             trX = np.multiply(trX, 1)
+
             trX = trX.reshape(number_of_pictures * number_of_slices_for_each_image,
                               settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
+
             srbm.pretrain(trX)
 
     # finetuning
@@ -125,6 +130,8 @@ if __name__ == '__main__':
             image, label = get_file(counter, column_format=False)
             counter += 1
             imgs, lbls = windowing(image, label, column_format=True, preprocess=True)
+            import pdb
+            pdb.set_trace()
             trX.append(imgs)
             trY.append(lbls)
 
@@ -133,12 +140,41 @@ if __name__ == '__main__':
                           settings.WINDOW_WIDTH * settings.WINDOW_HEIGHT)
         trY = np.multiply(trY, 1)
         trY = trY.reshape(number_of_pictures * number_of_slices_for_each_image, 1)
-        np.eye(settings.NUMBER_OF_CLASSES)[[trY]].reshape(trY.shape[0], settings.NUMBER_OF_CLASSES)
+        trY = np.eye(settings.NUMBER_OF_CLASSES)[[trY]].reshape(trY.shape[0], settings.NUMBER_OF_CLASSES)
 
         srbm.fit(trX, trY, restore_previous_model=FLAGS.restore_previous_model)
 
     # Test the model
-    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX, trY)))
+
+    trX_0 = []
+    trY_0 = []
+    trX_1 = []
+    trY_1 = []
+    trX_2 = []
+    trY_2 = []
+    trX_3 = []
+    trY_3 = []
+    for i in xrange(len(trY)):
+        # import pdb
+        # pdb.set_trace()
+        if trY[i, 0] == 1:
+            trX_0.append(trX[i, :])
+            trY_0.append(trY[i, :])
+        elif trY[i, 1] == 1:
+            trX_1.append(trX[i, :])
+            trY_1.append(trY[i, :])
+        elif trY[i, 2] == 1:
+            trX_2.append(trX[i, :])
+            trY_2.append(trY[i, :])
+        else:
+            trX_3.append(trX[i, :])
+            trY_3.append(trY[i, :])
+
+    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_0, trY_0)))
+    # print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_1, trY_1)))
+    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_2, trY_2)))
+    # print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX_3, trY_3)))
+
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
 
     TEST_IMAGE_NUMBER = 20
@@ -149,26 +185,33 @@ if __name__ == '__main__':
     label[np.where(label == 3)] = 254
 
     colored_label = np.zeros([256, 256, 3])
-
+    # import pdb
+    # pdb.set_trace()
+    # guess = srbm.predict(image.reshape(1, settings.WINDOW_HEIGHT * settings.WINDOW_WIDTH))
+    # if guess != 0:
+    #     print guess
+    #     quit()
     for i in xrange(100, 140):
         for j in xrange(100, 140):
-            sample = image[i - 2: i + 3, j - 2: j + 3]
-            import ipdb
-            ipdb.set_trace()
-            guess = srbm.predict(sample.reshape(1, 25))
+            sample = image[i - settings.WINDOW_HEIGHT / 2: i + settings.WINDOW_HEIGHT / 2 + 1,
+                     j - settings.WINDOW_WIDTH / 2: j + settings.WINDOW_WIDTH / 2 + 1]
+            # import ipdb
+            # ipdb.set_trace()
+            guess = srbm.predict(sample.reshape(1, settings.WINDOW_HEIGHT * settings.WINDOW_WIDTH))
             if guess != 0:
                 print guess
                 quit()
-            # if guess == 1:
-            #     colored_label[i, j, 0] = 255
-            # elif guess == 2:
-            #     colored_label[i, j, 1] = 255
-            # if guess == 3:
-            #     colored_label[i, j, 2] = 255
+                if guess == 1:
+                    colored_label[i, j, 0] = 255
+                elif guess == 2:
+                    colored_label[i, j, 1] = 255
+                if guess == 3:
+                    colored_label[i, j, 2] = 255
 
     import matplotlib.pyplot as plt
+
     plt.imshow(colored_label)
-    plt.imshow(image)
+    # plt.imshow(image)
     plt.show()
 
     # # Save the predictions of the model

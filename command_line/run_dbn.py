@@ -37,17 +37,17 @@ flags.DEFINE_float('momentum', 0.5, 'Momentum parameter.')
 flags.DEFINE_string('rbm_layers', '256,', 'Comma-separated values for the layers in the sdae.')
 flags.DEFINE_boolean('rbm_gauss_visible', False, 'Whether to use Gaussian units for the visible layer.')
 flags.DEFINE_float('rbm_stddev', 0.1, 'Standard deviation for Gaussian visible units.')
-flags.DEFINE_string('rbm_learning_rate', '0.01,', 'Initial learning rate.')
+flags.DEFINE_string('rbm_learning_rate', '0.001,', 'Initial learning rate.')
 flags.DEFINE_string('rbm_num_epochs', '10,', 'Number of epochs.')
 flags.DEFINE_string('rbm_batch_size', '10,', 'Size of each mini-batch.')
 flags.DEFINE_string('rbm_gibbs_k', '1,', 'Gibbs sampling steps.')
 
 # Supervised fine tuning parameters
 flags.DEFINE_string('finetune_act_func', 'sigmoid', 'Activation function.')
-flags.DEFINE_float('finetune_learning_rate', 0.01, 'Learning rate.')
+flags.DEFINE_float('finetune_learning_rate', 0.9, 'Learning rate.')
 flags.DEFINE_float('finetune_momentum', 0.7, 'Momentum parameter.')
-flags.DEFINE_integer('finetune_num_epochs', 10, 'Number of epochs.')
-flags.DEFINE_integer('finetune_batch_size', 10, 'Size of each mini-batch.')
+flags.DEFINE_integer('finetune_num_epochs', 100, 'Number of epochs.')
+flags.DEFINE_integer('finetune_batch_size', 100, 'Size of each mini-batch.')
 flags.DEFINE_string('finetune_opt', 'gradient_descent', '["gradient_descent", "ada_grad", "momentum", "adam"]')
 flags.DEFINE_string('finetune_loss_func', 'softmax_cross_entropy', 'Loss function. ["mean_squared", "softmax_cross_entropy"]')
 flags.DEFINE_float('finetune_dropout', 1, 'Dropout parameter.')
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     srbm.fit(trX, trY, vlX, vlY, restore_previous_model=FLAGS.restore_previous_model)
 
     # Test the model
-    print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
+    print('Test set accuracy: {}'.format(srbm.compute_accuracy(trX, trY)))
 
     # Save the predictions of the model
     if FLAGS.save_predictions:

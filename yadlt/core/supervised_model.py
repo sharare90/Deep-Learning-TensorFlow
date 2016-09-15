@@ -36,6 +36,8 @@ class SupervisedModel(Model):
         :return: self
         """
         if len(train_labels.shape) != 1:
+            # import pdb
+            # pdb.set_trace()
             num_classes = train_labels.shape[1]
         else:
             raise Exception("Please convert the labels with one-hot encoding.")

@@ -203,7 +203,8 @@ class Model(object):
                 next_valid = layer_obj.transform(validation_set, graph=graph)
             else:
                 next_valid = None
-
+        # import pdb
+        # pdb.set_trace()
         return next_train, next_valid
 
     def get_layers_output(self, dataset):
