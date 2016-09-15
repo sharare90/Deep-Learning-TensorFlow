@@ -1,5 +1,7 @@
 import os
 
+from random import shuffle
+
 import numpy as np
 import tensorflow as tf
 
@@ -167,6 +169,12 @@ if __name__ == '__main__':
     TRX = np.concatenate([trX0, trX128, trX192, trX254])
     TRY = np.concatenate([trY0, trY128, trY192, trY254])
 
+    if settings.SHUFFLING:
+        shuffled_indices = range(TRX.shape[0])
+        shuffle(shuffled_indices)
+        TRX = TRX[shuffled_indices]
+        TRY = TRY[shuffled_indices]
+
     # Fit the model (unsupervised pre-training)
     if FLAGS.do_pretrain:
         srbm.pretrain(TRX)
@@ -210,42 +218,42 @@ if __name__ == '__main__':
 
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
 
-    TEST_IMAGE_NUMBER = 20
-    image, label = get_file(TEST_IMAGE_NUMBER, False)
-
-    label[np.where(label == 1)] = 128
-    label[np.where(label == 2)] = 192
-    label[np.where(label == 3)] = 254
-
-    colored_label = np.zeros([256, 256, 3])
-    # import pdb
-    # pdb.set_trace()
-    # guess = srbm.predict(image.reshape(1, settings.WINDOW_HEIGHT * settings.WINDOW_WIDTH))
-    # if guess != 0:
-    #     print guess
-    #     quit()
-    for i in xrange(100, 140):
-        for j in xrange(100, 140):
-            sample = image[i - settings.WINDOW_HEIGHT / 2: i + settings.WINDOW_HEIGHT / 2 + 1,
-                     j - settings.WINDOW_WIDTH / 2: j + settings.WINDOW_WIDTH / 2 + 1]
-            # import ipdb
-            # ipdb.set_trace()
-            guess = srbm.predict(sample.reshape(1, settings.WINDOW_HEIGHT * settings.WINDOW_WIDTH))
-            if guess != 0:
-                print guess
-                quit()
-                if guess == 1:
-                    colored_label[i, j, 0] = 255
-                elif guess == 2:
-                    colored_label[i, j, 1] = 255
-                if guess == 3:
-                    colored_label[i, j, 2] = 255
-
-    import matplotlib.pyplot as plt
-
-    plt.imshow(colored_label)
-    # plt.imshow(image)
-    plt.show()
+    # TEST_IMAGE_NUMBER = 20
+    # image, label = get_file(TEST_IMAGE_NUMBER, False)
+    #
+    # label[np.where(label == 1)] = 128
+    # label[np.where(label == 2)] = 192
+    # label[np.where(label == 3)] = 254
+    #
+    # colored_label = np.zeros([256, 256, 3])
+    # # import pdb
+    # # pdb.set_trace()
+    # # guess = srbm.predict(image.reshape(1, settings.WINDOW_HEIGHT * settings.WINDOW_WIDTH))
+    # # if guess != 0:
+    # #     print guess
+    # #     quit()
+    # for i in xrange(100, 140):
+    #     for j in xrange(100, 140):
+    #         sample = image[i - settings.WINDOW_HEIGHT / 2: i + settings.WINDOW_HEIGHT / 2 + 1,
+    #                  j - settings.WINDOW_WIDTH / 2: j + settings.WINDOW_WIDTH / 2 + 1]
+    #         # import ipdb
+    #         # ipdb.set_trace()
+    #         guess = srbm.predict(sample.reshape(1, settings.WINDOW_HEIGHT * settings.WINDOW_WIDTH))
+    #         if guess != 0:
+    #             print guess
+    #             quit()
+    #             if guess == 1:
+    #                 colored_label[i, j, 0] = 255
+    #             elif guess == 2:
+    #                 colored_label[i, j, 1] = 255
+    #             if guess == 3:
+    #                 colored_label[i, j, 2] = 255
+    #
+    # import matplotlib.pyplot as plt
+    #
+    # plt.imshow(colored_label)
+    # # plt.imshow(image)
+    # plt.show()
 
     # # Save the predictions of the model
     # if FLAGS.save_predictions:
