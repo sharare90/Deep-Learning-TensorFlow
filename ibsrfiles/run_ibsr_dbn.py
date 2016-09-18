@@ -182,7 +182,9 @@ if __name__ == '__main__':
     print('Test set accuracy for 192: {}'.format(srbm.compute_accuracy(trX192, trY192)))
     print('Test set accuracy for 254: {}'.format(srbm.compute_accuracy(trX254, trY254)))
 
-    srbm.compute_dice_coefficient(TRX, TRY)
+    dcs = srbm.compute_dice_coefficient(TRX, TRY, [0, 1, 2, 3])
+    for i in range(4):
+        print 'Dice Coefficients for label %d: %0.3f.' % (i, dcs[i])
 
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
 

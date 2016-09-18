@@ -121,3 +121,25 @@ class SupervisedModel(Model):
             self.accuracy = tf.reduce_mean(
                 tf.cast(correct_prediction, "float"))
             _ = tf.scalar_summary('accuracy', self.accuracy)
+
+    def compute_dice_coefficient(self, x, y, labels):
+        dcs = list()
+        with self.tf_graph.as_default():
+            with tf.Session() as self.tf_session:
+                self.tf_saver.restore(self.tf_session, self.model_path)
+                model_predictions = tf.argmax(self.last_out, 1)
+                input_label = tf.placeholder(tf.float32, shape=y.shape)
+                tf_y = tf.argmax(input_label, 1)
+                for label in labels:
+                    true_positive = tf.reduce_sum(tf.mul(tf.cast(tf.equal(tf_y, label), tf.int32),
+                                                         tf.cast(tf.equal(model_predictions, label), tf.int32)))
+                    false_positive = tf.reduce_sum(tf.mul(tf.cast(tf.equal(tf_y, label), tf.int32),
+                                                          tf.cast(tf.not_equal(model_predictions, label), tf.int32)))
+                    false_negative = tf.reduce_sum(tf.mul(tf.cast(tf.not_equal(tf_y, label), tf.int32),
+                                                          tf.cast(tf.equal(model_predictions, label), tf.int32)))
+
+                    dice_coefficient = 2 * true_positive / (2 * true_positive + false_positive + false_negative)
+                    dcs.append(
+                        dice_coefficient.eval({self.input_data: x, input_label: y, self.keep_prob: 1})
+                    )
+        return dcs
