@@ -42,7 +42,7 @@ flags.DEFINE_string('main_dir', 'dbn/', 'Directory to store data relative to the
 flags.DEFINE_float('momentum', 0.5, 'Momentum parameter.')
 
 # RBMs layers specific parameters
-flags.DEFINE_string('rbm_layers', '50,', 'Comma-separated values for the layers in the sdae.')
+flags.DEFINE_string('rbm_layers', '500,', 'Comma-separated values for the layers in the sdae.')
 flags.DEFINE_boolean('rbm_gauss_visible', False, 'Whether to use Gaussian units for the visible layer.')
 flags.DEFINE_float('rbm_stddev', 0.1, 'Standard deviation for Gaussian visible units.')
 flags.DEFINE_string('rbm_learning_rate', '0.001,', 'Initial learning rate.')
@@ -51,7 +51,7 @@ flags.DEFINE_string('rbm_batch_size', '10,', 'Size of each mini-batch.')
 flags.DEFINE_string('rbm_gibbs_k', '1,', 'Gibbs sampling steps.')
 
 # Supervised fine tuning parameters
-flags.DEFINE_string('finetune_act_func', 'sigmoid', 'Activation function.')
+flags.DEFINE_string('finetune_act_func', 'tanh', 'Activation function.')
 flags.DEFINE_float('finetune_learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('finetune_momentum', 0.7, 'Momentum parameter.')
 flags.DEFINE_integer('finetune_num_epochs', 10, 'Number of epochs.')
@@ -169,47 +169,13 @@ if __name__ == '__main__':
     TRX = np.concatenate([trX0, trX128, trX192, trX254])
     TRY = np.concatenate([trY0, trY128, trY192, trY254])
 
-    if settings.SHUFFLING:
-        shuffled_indices = range(TRX.shape[0])
-        shuffle(shuffled_indices)
-        TRX = TRX[shuffled_indices]
-        TRY = TRY[shuffled_indices]
-
     # Fit the model (unsupervised pre-training)
     if FLAGS.do_pretrain:
         srbm.pretrain(TRX)
-        # srbm.pretrain(trX192)
 
     # fine-tuning
     print('Start deep belief net finetuning...')
     srbm.fit(TRX, TRY, restore_previous_model=FLAGS.restore_previous_model)
-    # srbm.fit(trX192, trY192, restore_previous_model=FLAGS.restore_previous_model)
-
-    # Test the model
-
-    # trX_0 = []
-    # trY_0 = []
-    # trX_1 = []
-    # trY_1 = []
-    # trX_2 = []
-    # trY_2 = []
-    # trX_3 = []
-    # trY_3 = []
-    # for i in xrange(len(trY)):
-    #     # import pdb
-    #     # pdb.set_trace()
-    #     if trY[i, 0] == 1:
-    #         trX_0.append(trX[i, :])
-    #         trY_0.append(trY[i, :])
-    #     elif trY[i, 1] == 1:
-    #         trX_1.append(trX[i, :])
-    #         trY_1.append(trY[i, :])
-    #     elif trY[i, 2] == 1:
-    #         trX_2.append(trX[i, :])
-    #         trY_2.append(trY[i, :])
-    #     else:
-    #         trX_3.append(trX[i, :])
-    #         trY_3.append(trY[i, :])
 
     print('Test set accuracy for 0: {}'.format(srbm.compute_accuracy(trX0, trY0)))
     print('Test set accuracy for 128: {}'.format(srbm.compute_accuracy(trX128, trY128)))
