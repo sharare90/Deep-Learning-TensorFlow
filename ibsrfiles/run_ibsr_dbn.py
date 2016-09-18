@@ -182,6 +182,8 @@ if __name__ == '__main__':
     print('Test set accuracy for 192: {}'.format(srbm.compute_accuracy(trX192, trY192)))
     print('Test set accuracy for 254: {}'.format(srbm.compute_accuracy(trX254, trY254)))
 
+    srbm.compute_dice_coefficient(TRX, TRY)
+
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
 
     # TEST_IMAGE_NUMBER = 20
