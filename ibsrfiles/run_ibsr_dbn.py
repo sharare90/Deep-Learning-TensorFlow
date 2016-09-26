@@ -37,7 +37,7 @@ flags.DEFINE_string('save_layers_output_train', '',
 flags.DEFINE_boolean('do_pretrain', True, 'Whether or not pretrain the network.')
 flags.DEFINE_boolean('restore_previous_model', False, 'If true, restore previous model corresponding to model name.')
 flags.DEFINE_integer('seed', -1, 'Seed for the random generators (>= 0). Useful for testing hyperparameters.')
-flags.DEFINE_integer('verbose', 0, 'Level of verbosity. 0 - silent, 1 - print accuracy.')
+flags.DEFINE_integer('verbose', 1, 'Level of verbosity. 0 - silent, 1 - print accuracy.')
 flags.DEFINE_string('main_dir', 'dbn/', 'Directory to store data relative to the algorithm.')
 flags.DEFINE_float('momentum', 0.5, 'Momentum parameter.')
 
@@ -171,11 +171,11 @@ if __name__ == '__main__':
 
     # Fit the model (unsupervised pre-training)
     if FLAGS.do_pretrain:
-        srbm.pretrain(TRX)
+        srbm.pretrain(TRX, TRX)
 
     # fine-tuning
     print('Start deep belief net finetuning...')
-    srbm.fit(TRX, TRY, restore_previous_model=FLAGS.restore_previous_model)
+    srbm.fit(TRX, TRY, TRX, TRY, restore_previous_model=FLAGS.restore_previous_model)
 
     print('Test set accuracy for 0: {}'.format(srbm.compute_accuracy(trX0, trY0)))
     print('Test set accuracy for 128: {}'.format(srbm.compute_accuracy(trX128, trY128)))
@@ -185,6 +185,9 @@ if __name__ == '__main__':
     dcs = srbm.compute_dice_coefficient(TRX, TRY, [0, 1, 2, 3])
     for i in range(4):
         print 'Dice Coefficients for label %d: %0.3f.' % (i, dcs[i])
+
+    for i in range(4):
+        print '%0.3f.' % dcs[i],
 
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
 
