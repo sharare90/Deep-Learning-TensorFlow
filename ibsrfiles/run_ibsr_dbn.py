@@ -34,28 +34,28 @@ flags.DEFINE_string('save_layers_output_test', '',
                     'Path to a .npy file to save test set output from all the layers of the model.')
 flags.DEFINE_string('save_layers_output_train', '',
                     'Path to a .npy file to save train set output from all the layers of the model.')
-flags.DEFINE_boolean('do_pretrain', True, 'Whether or not pretrain the network.')
+flags.DEFINE_boolean('do_pretrain', False, 'Whether or not pretrain the network.')
 flags.DEFINE_boolean('restore_previous_model', False, 'If true, restore previous model corresponding to model name.')
 flags.DEFINE_integer('seed', -1, 'Seed for the random generators (>= 0). Useful for testing hyperparameters.')
-flags.DEFINE_integer('verbose', 0, 'Level of verbosity. 0 - silent, 1 - print accuracy.')
+flags.DEFINE_integer('verbose', 1, 'Level of verbosity. 0 - silent, 1 - print accuracy.')
 flags.DEFINE_string('main_dir', 'dbn/', 'Directory to store data relative to the algorithm.')
 flags.DEFINE_float('momentum', 0.5, 'Momentum parameter.')
 
 # RBMs layers specific parameters
-flags.DEFINE_string('rbm_layers', '500,', 'Comma-separated values for the layers in the sdae.')
+flags.DEFINE_string('rbm_layers', '250,', 'Comma-separated values for the layers in the sdae.')
 flags.DEFINE_boolean('rbm_gauss_visible', False, 'Whether to use Gaussian units for the visible layer.')
 flags.DEFINE_float('rbm_stddev', 0.1, 'Standard deviation for Gaussian visible units.')
 flags.DEFINE_string('rbm_learning_rate', '0.001,', 'Initial learning rate.')
-flags.DEFINE_string('rbm_num_epochs', '10,', 'Number of epochs.')
-flags.DEFINE_string('rbm_batch_size', '10,', 'Size of each mini-batch.')
+flags.DEFINE_string('rbm_num_epochs', '100,', 'Number of epochs.')
+flags.DEFINE_string('rbm_batch_size', '8000,', 'Size of each mini-batch.')
 flags.DEFINE_string('rbm_gibbs_k', '1,', 'Gibbs sampling steps.')
 
 # Supervised fine tuning parameters
-flags.DEFINE_string('finetune_act_func', 'tanh', 'Activation function.')
-flags.DEFINE_float('finetune_learning_rate', 0.001, 'Learning rate.')
+flags.DEFINE_string('finetune_act_func', 'sigmoid', 'Activation function.')
+flags.DEFINE_float('finetune_learning_rate', 0.5, 'Learning rate.')
 flags.DEFINE_float('finetune_momentum', 0.7, 'Momentum parameter.')
-flags.DEFINE_integer('finetune_num_epochs', 10, 'Number of epochs.')
-flags.DEFINE_integer('finetune_batch_size', 10, 'Size of each mini-batch.')
+flags.DEFINE_integer('finetune_num_epochs', 100, 'Number of epochs.')
+flags.DEFINE_integer('finetune_batch_size', 8000, 'Size of each mini-batch.')
 flags.DEFINE_string('finetune_opt', 'gradient_descent', '["gradient_descent", "ada_grad", "momentum", "adam"]')
 flags.DEFINE_string('finetune_loss_func', 'softmax_cross_entropy',
                     'Loss function. ["mean_squared", "softmax_cross_entropy"]')
