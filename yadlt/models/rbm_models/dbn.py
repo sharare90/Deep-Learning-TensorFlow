@@ -143,7 +143,13 @@ class DeepBeliefNetwork(SupervisedModel):
 
         for i in range(self.num_epochs):
 
-            np.random.shuffle(shuff)
+            try:
+                shuff = np.load('shuffled_matrix.npy')
+            except:
+                print('Shuffled matrix could not be loaded.')
+                np.random.shuffle(shuff)
+                np.save('shuffled_matrix', shuff)
+
             batches = [_ for _ in utilities.gen_batches(
                 shuff, self.batch_size)]
 
