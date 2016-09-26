@@ -187,7 +187,7 @@ if __name__ == '__main__':
         print 'Dice Coefficients for label %d: %0.3f.' % (i, dcs[i])
 
     for i in range(4):
-        print '%0.3f.' % dcs[i],
+        print '%0.3f' % dcs[i],
 
     # print('Test set accuracy: {}'.format(srbm.compute_accuracy(teX, teY)))
 
